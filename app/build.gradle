@@ -37,6 +37,7 @@ dependencies {
     // to be extracted to edgent-android-wrapper
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'org.apache.edgent.android:edgent-providers-direct:1.2.0'
+    implementation 'org.apache.edgent.android:edgent-connectors-mqtt:1.2.0'
     implementation 'org.apache.edgent.android:edgent-android-hardware:1.2.0'
     implementation 'org.apache.edgent.android:edgent-android-topology:1.2.0'
 
