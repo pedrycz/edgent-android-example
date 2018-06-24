@@ -8,16 +8,14 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
-import org.apache.edgent.android.hardware.SensorStreams;
-import org.apache.edgent.android.topology.ActivityStreams;
-import org.apache.edgent.connectors.mqtt.MqttStreams;
 import org.apache.edgent.function.Consumer;
-import org.apache.edgent.function.Function;
-import org.apache.edgent.providers.direct.DirectProvider;
-import org.apache.edgent.topology.TStream;
-import org.apache.edgent.topology.Topology;
 
-import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
+
+import pl.edu.agh.edgentandroidwrapper.Topology.MappingTopology;
+import pl.edu.agh.edgentandroidwrapper.collector.SensorDataCollector;
+import pl.edu.agh.edgentandroidwrapper.samplingrate.SamplingRate;
+import pl.edu.agh.edgentandroidwrapper.task.EdgentTask;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -26,46 +24,32 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // create Edgent topology
-        final DirectProvider provider = new DirectProvider();
-        final Topology topology = provider.newTopology("My topology");
-
-        // create Edgent stream using Android sensors
-        final SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        final TStream<SensorEvent> stream = SensorStreams.sensors(topology, sensorManager, Sensor.TYPE_ACCELEROMETER);
-
-        // register Android ui thread consumer
         final TextView textView = findViewById(R.id.example_textview);
-        final Consumer<SensorEvent> uiThreadConsumer = new Consumer<SensorEvent>() {
-            @Override
-            public void accept(SensorEvent event) {
-                textView.setText(String.valueOf(event.values[0]));
-            }
+        final Consumer<SensorEvent> uiThreadConsumer = (Consumer<SensorEvent>) event -> {
+            textView.setText(String.valueOf(event.values[0]));
         };
-        ActivityStreams.sinkOnUIThread(this, stream, uiThreadConsumer);
 
-        // register MQTT consumer
-        final Function<SensorEvent, byte[]> mqttSerializer = new Function<SensorEvent, byte[]>() {
-            @Override
-            public byte[] apply(SensorEvent event) {
-                return ByteBuffer.allocate(4).putFloat(event.values[0]).array();
-            }
-        };
-        MqttStreams mqttStreams = new MqttStreams(topology, "tcp://broker.hivemq.com:1883", "52033_client");
-        mqttStreams.publish(stream, of("52033_topic"), mqttSerializer, of(0), of(false));
+        EdgentTask task = EdgentTask.builder()
+                .sensorManager((SensorManager) getSystemService(Context.SENSOR_SERVICE))
+                .sensorDataCollector(SensorDataCollector.builder()
+                        .sensor(Sensor.TYPE_ACCELEROMETER)
+                        .samplingRate(SamplingRate.builder()
+                                .timeUnit(TimeUnit.MICROSECONDS)
+                                .value(1000000)
+                                .build())
+                        .simpleTopology(MappingTopology.builder()
+                                .name("Mapping topology")
+                                .tag("first value")
+                                .mapper(event -> (double) event.values[0])
+                                .build()
+                        )
+                        .activity(MainActivity.this)
+                        .consumer(() -> uiThreadConsumer)
+                        .build())
+                .build();
 
-        // run Edgent topology with both consumers
-        provider.submit(topology);
+        task.start();
 
-    }
-
-    private <T> Function<SensorEvent, T> of(final T value) {
-        return new Function<SensorEvent, T>() {
-            @Override
-            public T apply(SensorEvent sensorEvent) {
-                return value;
-            }
-        };
     }
 
 }

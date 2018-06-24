@@ -4,7 +4,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "pl.edgent_android_example"
-        minSdkVersion 14
+        minSdkVersion 26
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -27,6 +27,10 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -34,7 +38,11 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
 
-    // to be extracted to edgent-android-wrapper
+    implementation('com.github.ppedrycz:edgent-android-wrapper:master-SNAPSHOT') {
+        exclude group: 'com.google'
+        exclude group: 'org.apache.edgent'
+    }
+
     implementation 'org.slf4j:slf4j-api:1.7.25'
     implementation 'org.apache.edgent.android:edgent-providers-direct:1.2.0'
     implementation 'org.apache.edgent.android:edgent-connectors-mqtt:1.2.0'
