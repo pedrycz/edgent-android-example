@@ -31,22 +31,23 @@ android {
         exclude 'META-INF/notice.txt'
         exclude 'META-INF/ASL2.0'
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-//    implementation 'org.apache.edgent.android:edgent-providers-direct:1.2.0'
-//    implementation 'org.apache.edgent.android:edgent-android-hardware:1.2.0'
-//    implementation ('org.apache.edgent.android:edgent-android-topology:1.2.0') {
-//
-//    }
-    implementation ('org.apache.edgent.android:edgent-connectors-mqtt:1.2.0') {
-        exclude group: 'org.apache.edgent.android', module: 'edgent-api-topology'
-    }
+    implementation 'org.apache.edgent.android:edgent-providers-direct:1.2.0'
+    implementation 'org.apache.edgent.android:edgent-android-hardware:1.2.0'
+    implementation ('org.apache.edgent.android:edgent-android-topology:1.2.0')
+    implementation ('org.apache.edgent.android:edgent-connectors-mqtt:1.2.0')
     implementation ('com.github.ppedrycz:edgent-android-wrapper:master-SNAPSHOT') {
-        exclude group: 'org.apache.edgent', module: 'edgent-connectors-mqtt'
+        exclude group: 'org.apache.edgent'
+        exclude group: 'com.google'
     }
     // to be extracted to edgent-android-wrapper
     implementation 'org.slf4j:slf4j-api:1.7.25'

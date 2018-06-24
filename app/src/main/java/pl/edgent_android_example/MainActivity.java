@@ -26,6 +26,7 @@ import pl.edu.agh.edgentandroidwrapper.Topology.MappingTopology;
 import pl.edu.agh.edgentandroidwrapper.collector.SensorDataCollector;
 import pl.edu.agh.edgentandroidwrapper.consumer.SensorDataConsumer;
 import pl.edu.agh.edgentandroidwrapper.filter.ValueInRangeFilter;
+import pl.edu.agh.edgentandroidwrapper.helper.MqttVisitor;
 import pl.edu.agh.edgentandroidwrapper.helper.StreamVisitor;
 import pl.edu.agh.edgentandroidwrapper.samplingrate.SamplingRate;
 import pl.edu.agh.edgentandroidwrapper.task.EdgentTask;
@@ -43,7 +44,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         final SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
+        SensorDataConsumer consumer = new SensorDataConsumer() {
+            @Override
+            public Consumer getConsumer() {
+                return null;
+            }
+        };
         final TextView textView = findViewById(R.id.example_textview);
         final Consumer<SensorEvent> uiThreadConsumer = new Consumer<SensorEvent>() {
             @Override
@@ -52,17 +58,17 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-//        StreamVisitor<SensorEvent> visitor = MqttVisitor.<SensorEvent>builder()
-//                .queueUrl("tcp://iot.eclipse.org:1883")
-//                .clientId("52035_client")
-//                .topic("/52035_topic")
-//                .serializer(new Function<SensorEvent, byte[]>() {
-//                    @Override
-//                    public byte[] apply(SensorEvent sensorEvent) {
-//                        return ByteBuffer.allocate(4).putFloat(sensorEvent.values[0]).putFloat(4, sensorEvent.values[1]).array();
-//                    }
-//                })
-//                .build();
+        StreamVisitor<SensorEvent> visitor = MqttVisitor.<SensorEvent>builder()
+                .queueUrl("tcp://iot.eclipse.org:1883")
+                .clientId("52035_client")
+                .topic("/52035_topic")
+                .serializer(new Function<SensorEvent, byte[]>() {
+                    @Override
+                    public byte[] apply(SensorEvent sensorEvent) {
+                        return ByteBuffer.allocate(8).putFloat(sensorEvent.values[0]).putFloat(4, sensorEvent.values[1]).array();
+                    }
+                })
+                .build();
 
         EdgentTask task = EdgentTask.builder()
                 .sensorManager(sensorManager)
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                                         return uiThreadConsumer;
                                     }
                                 })
-//                                .streamVisitor(visitor)
+                                .streamVisitor(visitor)
                                 .build())
                 .build();
 
