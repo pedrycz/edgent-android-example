@@ -1,5 +1,9 @@
 apply plugin: 'com.android.application'
 
+configurations.all{
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 android {
     compileSdkVersion 27
     defaultConfig {
@@ -33,12 +37,16 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
-    implementation ('org.apache.edgent:edgent-connectors-mqtt:1.2.0'){
-        exclude(group: 'org.apache.edgent', module: 'edgent-api-topology')
-        exclude(group: 'org.apache.edgent', module: 'edgent-api-function')
+//    implementation 'org.apache.edgent.android:edgent-providers-direct:1.2.0'
+//    implementation 'org.apache.edgent.android:edgent-android-hardware:1.2.0'
+//    implementation ('org.apache.edgent.android:edgent-android-topology:1.2.0') {
+//
+//    }
+    implementation ('org.apache.edgent.android:edgent-connectors-mqtt:1.2.0') {
+        exclude group: 'org.apache.edgent.android', module: 'edgent-api-topology'
     }
-    implementation ('com.github.ppedrycz:edgent-android-wrapper:-SNAPSHOT') {
-        exclude(group: 'org.apache.edgent', module: 'edgent-connectors-mqtt')
+    implementation ('com.github.ppedrycz:edgent-android-wrapper:master-SNAPSHOT') {
+        exclude group: 'org.apache.edgent', module: 'edgent-connectors-mqtt'
     }
     // to be extracted to edgent-android-wrapper
     implementation 'org.slf4j:slf4j-api:1.7.25'
